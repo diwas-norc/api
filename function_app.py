@@ -9,23 +9,20 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     api_version = "2024-12-01-preview"
 
-    deployment_client = AzureOpenAI(
+    client = AzureOpenAI(
+        api_key=os.getenv("AZURE_OPENAI_KEY"),  
         api_version=api_version,
-        api_key=os.getenv("AZURE_OPENAI_KEY"),
-        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-        azure_deployment="gpt-4o-mini",
+        azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
     )
 
-    completion = deployment_client.chat.completions.create(
-        model="<ignored>",
-        messages=[
-            {
-                "role": "user",
-                "content": "How do I output all files in a directory using Python?",
-            },
-        ],
+    assistant = client.beta.assistants.create(
+        instructions="You are an AI assistant that can write code to help answer math questions",
+        model="gpt-4o-mini",
+        tools=[{"type": "code_interpreter"}]
     )
 
-    return completion.to_json()
+    print(assistant)
+    return func.HttpResponse("Hello World!")
+    # return completion.to_json()
         
     
