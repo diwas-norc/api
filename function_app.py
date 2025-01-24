@@ -1,3 +1,4 @@
+import base64
 import azure.functions as func
 from openai import AzureOpenAI
 import os
@@ -14,7 +15,7 @@ client = AzureOpenAI(
     azure_endpoint = os.environ["AZURE_OPENAI_ENDPOINT"]
 )
 
-assistant = client.beta.assistants.retrieve("asst_RgysFE7vBPl7qZ0zteB3N2Ps")
+assistant = client.beta.assistants.retrieve("asst_3eetENdbDuCxDLfSA3F35QNe")
 
 # assistant = client.beta.assistants.create(
 #     instructions="You are an AI assistant that can write code to help answer math questions",
@@ -61,37 +62,29 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
 @app.route(route="chat")
 def chat(req: func.HttpRequest) -> func.HttpResponse:
-    thread_id = req.params.get('thread_id')
-    message = req.params.get('message')
+    req_body = req.get_json()
+    thread_id = req_body.get('thread_id')
+    message = req_body.get('message')
 
-    files = req.get_json().get('files')
+    files = req_body.get('files')
     
     print("Files: ", [file['name'] for file in files])
     client_files = []
     for file in files:
         content = file["content"]
-        file_bytes = content.encode('utf-8')
-        file_io = io.BytesIO(file_bytes)
-        # file_io.name = file["name"]
+        decoded_data = base64.b64decode(content)
+        file_io = io.BytesIO(decoded_data)
+        file_io.name = file["name"]
 
         file_response = client.files.create(
             file=file_io,
             purpose="assistants"
         )
         client_files.append(file_response)
-
-    # return func.HttpResponse(
-    #     json.dumps({"data": [{"thread_id": thread_id, 
-    #                           "message": message, 
-    #                           "files": json.dumps([file.id for file in client_files])}
-    #                         ]}))
-
     
-
     if not message:
-        return func.HttpResponse("Please provide a message")
+        return func.HttpResponse("Please provide a message", status_code=401)
     
-    # if thread_id is null or empty, create a new thread
     if not thread_id:
         thread = client.beta.threads.create()
     else:
@@ -100,13 +93,14 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
     message = client.beta.threads.messages.create(
         thread_id=thread.id,
         role="user",
-        content="What is the carbon footprint of training a Llama model?",
+        content=message,
+        attachments=[{"file_id": c.id, "tools": [{"type":"file_search"}]} for c in client_files]
     )
 
     run = client.beta.threads.runs.create_and_poll(
         thread_id=thread.id,
-        assistant_id=assistant.id,
-        instructions="Please address the user as Jane Doe. The user has a premium account.",
+        assistant_id=assistant.id
+        # instructions="Please address the user as Jane Doe. The user has a premium account.",
     )
 
     print("Run completed with status: " + run.status)
@@ -114,7 +108,6 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
     if run.status == "completed":
         messages = client.beta.threads.messages.list(thread_id=thread.id)
         messages_json = messages.to_json()
-        # print(messages_json)
         return func.HttpResponse(messages_json)
     else:
         print("RUN FAILED: ", run)
