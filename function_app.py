@@ -138,6 +138,6 @@ def get_citations(message):
             # Note: File download functionality not implemented above for brevity
     
     if len(citations) > 0:
-        message_content.value += '\n\n-- Sources --\n' + '\n'.join(sorted(set(citations)))
+        message_content.value += '\n\n' + '\n'.join(sorted(set(citations)))
 
     return message
