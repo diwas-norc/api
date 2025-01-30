@@ -23,6 +23,10 @@ assistant = client.beta.assistants.retrieve("asst_3eetENdbDuCxDLfSA3F35QNe")
 #     tools=[{"type": "code_interpreter"}]
 # )
 
+@app.route(route="test_endpoint")
+def test_endpoint(req: func.HttpRequest) -> func.HttpResponse:
+    return func.HttpResponse("Hello, World!")
+
 @app.route(route="test")
 def main(req: func.HttpRequest) -> func.HttpResponse:
     # GPT-4o-mini
