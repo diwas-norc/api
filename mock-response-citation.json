@@ -1,0 +1,30 @@
+{
+    "id": "msg_cOG0F6jZNB9VDloNdphciCOy",
+    "assistant_id": "asst_3eetENdbDuCxDLfSA3F35QNe",
+    "attachments": [],
+    "content": [
+      {
+        "text": {
+          "annotations": [
+            {
+              "end_index": 326,
+              "file_citation": {
+                "file_id": "assistant-HaCDyq1x5zRN0neWDqez6TIE"
+              },
+              "start_index": 314,
+              "text": "【8:0†source】",
+              "type": "file_citation"
+            }
+          ],
+          "value": "The carbon footprint is the total amount of greenhouse gases, specifically carbon dioxide, emitted directly or indirectly by human activities. It is often expressed in terms of carbon dioxide equivalent (CO2eq), which is a standardized measure for different greenhouse gases based on their global warming potential [0].\n\n-- Sources --\n\n【0】llama-markitdown.md"
+        },
+        "type": "text"
+      }
+    ],
+    "created_at": 1738208634,
+    "metadata": {},
+    "object": "thread.message",
+    "role": "assistant",
+    "run_id": "run_QTIo3YwDZmzJPP2MHPmbqqpU",
+    "thread_id": "thread_OgtKl68tAPjESTPPpdChxvWL"
+  }

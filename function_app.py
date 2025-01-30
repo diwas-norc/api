@@ -126,8 +126,8 @@ def get_citations(message):
     citations = []
     # Iterate over the annotations and add footnotes
     for index, annotation in enumerate(annotations):
-    # Replace the text with a footnote
-        message_content.value = message_content.value.replace(annotation.text, f' [{index}]')
+        # Replace the text with a footnote
+        message_content.value = message_content.value.replace(annotation.text, f' 【{index}】')
         # Gather citations based on annotation attributes
         if (file_citation := getattr(annotation, 'file_citation', None)):
             cited_file = client.files.retrieve(file_citation.file_id)
@@ -137,7 +137,7 @@ def get_citations(message):
             citations.append(f'【{index}】 {cited_file.filename}')
             # Note: File download functionality not implemented above for brevity
     
-    # Add footnotes to the end of the message before displaying to user
-    message_content.value += '\n\n-- Sources --\n\n' + '\n'.join(sorted(set(citations)))
+    if len(citations) > 0:
+        message_content.value += '\n\n-- Sources --\n' + '\n'.join(sorted(set(citations)))
 
     return message
