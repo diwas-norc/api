@@ -68,19 +68,20 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
 
     files = req_body.get('files')
     
-    print("Files: ", [file['name'] for file in files])
     client_files = []
-    for file in files:
-        content = file["content"]
-        decoded_data = base64.b64decode(content)
-        file_io = io.BytesIO(decoded_data)
-        file_io.name = file["name"]
+    if files is not None:
+        print("Files: ", [file['name'] for file in files])
+        for file in files:
+            content = file["content"]
+            decoded_data = base64.b64decode(content)
+            file_io = io.BytesIO(decoded_data)
+            file_io.name = file["name"]
 
-        file_response = client.files.create(
-            file=file_io,
-            purpose="assistants"
-        )
-        client_files.append(file_response)
+            file_response = client.files.create(
+                file=file_io,
+                purpose="assistants"
+            )
+            client_files.append(file_response)
     
     if not message:
         return func.HttpResponse("Please provide a message", status_code=400)
@@ -103,15 +104,40 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
         extra_query={
             "include":["step_details.tool_calls[*].file_search.results[*].content"],
         }
-        # instructions="Please address the user as Jane Doe. The user has a premium account.",
+        # instructions="Please format your response in markdown.",
     )
 
     print("Run completed with status: " + run.status)
 
     if run.status == "completed":
         messages = client.beta.threads.messages.list(thread_id=thread.id)
-        messages_json = messages.to_json()
-        return func.HttpResponse(messages_json)
+        message_json = get_citations(messages.data[0]).to_json()
+        # message_json = messages.to_json()
+        return func.HttpResponse(message_json)
+        # return func.HttpResponse(messages.data[0].to_json())
     else:
         print("RUN FAILED: ", run)
         return func.HttpResponse("Run failed")
+
+def get_citations(message):
+    
+    message_content = message.content[0].text
+    annotations = message_content.annotations
+    citations = []
+    # Iterate over the annotations and add footnotes
+    for index, annotation in enumerate(annotations):
+    # Replace the text with a footnote
+        message_content.value = message_content.value.replace(annotation.text, f' [{index}]')
+        # Gather citations based on annotation attributes
+        if (file_citation := getattr(annotation, 'file_citation', None)):
+            cited_file = client.files.retrieve(file_citation.file_id)
+            citations.append(f'【{index}】{cited_file.filename}')
+        elif (file_path := getattr(annotation, 'file_path', None)):
+            cited_file = client.files.retrieve(file_path.file_id)
+            citations.append(f'【{index}】 {cited_file.filename}')
+            # Note: File download functionality not implemented above for brevity
+    
+    # Add footnotes to the end of the message before displaying to user
+    message_content.value += '\n\n-- Sources --\n\n' + '\n'.join(sorted(set(citations)))
+
+    return message

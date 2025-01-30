@@ -1,0 +1,11 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Activate Environments and Start Function Host",
+            "type": "shell",
+            "command": "conda activate base && source ${workspaceFolder}/.venv/bin/activate && func host start",
+            "problemMatcher": []
+        }
+    ]
+}

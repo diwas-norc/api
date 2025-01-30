@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Function App",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/function_app.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}
