@@ -83,7 +83,7 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
         client_files.append(file_response)
     
     if not message:
-        return func.HttpResponse("Please provide a message", status_code=401)
+        return func.HttpResponse("Please provide a message", status_code=400)
     
     if not thread_id:
         thread = client.beta.threads.create()
@@ -99,7 +99,10 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
 
     run = client.beta.threads.runs.create_and_poll(
         thread_id=thread.id,
-        assistant_id=assistant.id
+        assistant_id=assistant.id,
+        extra_query={
+            "include":["step_details.tool_calls[*].file_search.results[*].content"],
+        }
         # instructions="Please address the user as Jane Doe. The user has a premium account.",
     )
 
@@ -112,4 +115,3 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
     else:
         print("RUN FAILED: ", run)
         return func.HttpResponse("Run failed")
-    
