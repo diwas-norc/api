@@ -23,11 +23,11 @@ assistant = client.beta.assistants.retrieve("asst_3eetENdbDuCxDLfSA3F35QNe")
 #     tools=[{"type": "code_interpreter"}]
 # )
 
-@app.route(route="test_endpoint")
+@app.route(route="test_endpoint", methods=["GET", "POST"], auth_level="anonymous")
 def test_endpoint(req: func.HttpRequest) -> func.HttpResponse:
     return func.HttpResponse("Hello, World!")
 
-@app.route(route="test")
+@app.route(route="test", methods=["GET", "POST"], auth_level="anonymous")
 def main(req: func.HttpRequest) -> func.HttpResponse:
     # GPT-4o-mini
     # thread id thread_q0gqkDEvMcHxdQ8blYaiAtdp
@@ -64,7 +64,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse("Run failed")
     
 
-@app.route(route="chat")
+@app.route(route="chat", methods=["POST"], auth_level="anonymous")
 def chat(req: func.HttpRequest) -> func.HttpResponse:
     req_body = req.get_json()
     thread_id = req_body.get('thread_id')
